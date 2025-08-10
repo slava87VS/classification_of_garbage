@@ -14,9 +14,10 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.5]*3, std=[0.5]*3)
 ])
 
-DATA_PATH = '../../class_trash/dataset_marker'
-dataset = ImageFolder(root=DATA_PATH, transform=transform)
-CLASS_NAMES = dataset.classes
+# DATA_PATH = '../../class_trash/dataset_marker'
+# dataset = ImageFolder(root=DATA_PATH, transform=transform)
+CLASS_NAMES = ['alu_41', 'c_ldpe_90', 'c_pap_84', 'c_pet', 'c_pp_folg', 'glass_dark', 'glass_transparent', 'green_glass__pap_22', 'hdpe_2__pet_1', 'hdpe_2__pp_5soft__pet_1', 'hdpe_2_soft', 'hdpe_2_solid', 'hdpe_2_solid__pap_20', 'jb_cover', 'jb_cover__glass_dark', 'ldpe_4_color', 'not_defined', 'other_7', 'pap_20', 'pap_21', 'pap_22', 'pet_1', 'pet_1__pap_22', 'pet_1__pap_22__hdpe_2_solid', 'pp_5_folg', 'pp_5_soft', 'pp_5_soft__pet_1', 'pp_5_solid', 'pp_5_solid__c_ldpe_90', 'ps_6_soft', 'ps_6_solid', 'ps_6_solid__pap_22', 'pvc_3', 'pvc_3__ps_6']
+
 
 # Словарь с описаниями классов
 CLASS_DESCRIPTIONS = {
