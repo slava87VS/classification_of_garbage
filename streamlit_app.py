@@ -93,7 +93,10 @@ if uploaded_file:
         pred_index = output.argmax(1).item()
         pred_class = CLASS_NAMES[pred_index]
         description = CLASS_DESCRIPTIONS.get(pred_class, pred_class)  # если описание нет — выводим просто метку
-        st.success(f"🧠 Предсказанный класс: **{description}**")
+        probs = torch.softmax(output, dim=1)
+        predicted_index = torch.argmax(probs, dim=1).item()
+        confidence = probs[0, predicted_index].item()
+        st.success(f"🧠 Предсказанный класс: **{description}** (доверие: {confidence:.2%})")
 
 # === Рекомендации для пользователя ===
 st.divider()
