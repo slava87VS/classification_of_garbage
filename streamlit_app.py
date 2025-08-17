@@ -3,59 +3,71 @@ from PIL import Image
 import torch
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
+import json
 
 # === Настройки ===
 IMG_SIZE = (192, 256)
 
 # 1. Трансформации
+# === Функция предобработки изображения ===
+def resize_and_center(img, size):
+    """
+    Масштабирует изображение с сохранением пропорций и добавляет черные поля
+    для центрирования объекта
+    """
+    # Создаем копию, чтобы не изменять оригинал
+    img = img.copy()
+
+    # Определяем ориентацию (альбомная/портретная)
+    is_landscape = img.width > img.height
+
+    # Масштабируем по большей стороне
+    if is_landscape:
+        new_width = size[0]
+        new_height = int(size[0] * img.height / img.width)
+    else:
+        new_height = size[1]
+        new_width = int(size[1] * img.width / img.height)
+
+    # Ресайз с сохранением пропорций
+    img = img.resize((new_width, new_height), Image.BILINEAR)
+
+    # Создаем новый холст с черным фоном
+    new_img = Image.new("RGB", size, (0, 0, 0))
+
+    # Центрируем изображение
+    left = (size[0] - img.width) // 2
+    top = (size[1] - img.height) // 2
+    new_img.paste(img, (left, top))
+
+    return new_img
+
+
+# === Трансформации ===
 transform = transforms.Compose([
-    transforms.Resize(IMG_SIZE),
+    transforms.Lambda(lambda img: resize_and_center(img, IMG_SIZE)),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5]*3, std=[0.5]*3)
+    transforms.Normalize(mean=[0.5] * 3, std=[0.5] * 3)
 ])
 
-# DATA_PATH = '../../class_trash/dataset_marker'
-# dataset = ImageFolder(root=DATA_PATH, transform=transform)
-CLASS_NAMES = ['alu_41', 'c_ldpe_90', 'c_pap_84', 'c_pet', 'c_pp_folg', 'glass_dark', 'glass_transparent', 'green_glass__pap_22', 'hdpe_2__pet_1', 'hdpe_2__pp_5soft__pet_1', 'hdpe_2_soft', 'hdpe_2_solid', 'hdpe_2_solid__pap_20', 'jb_cover', 'jb_cover__glass_dark', 'ldpe_4_color', 'not_defined', 'other_7', 'pap_20', 'pap_21', 'pap_22', 'pet_1', 'pet_1__pap_22', 'pet_1__pap_22__hdpe_2_solid', 'pp_5_folg', 'pp_5_soft', 'pp_5_soft__pet_1', 'pp_5_solid', 'pp_5_solid__c_ldpe_90', 'ps_6_soft', 'ps_6_solid', 'ps_6_solid__pap_22', 'pvc_3', 'pvc_3__ps_6']
+
+# === Загрузка метаданных ===
+def load_metadata():
+    """Загружает названия классов и описания из JSON-файлов"""
+    try:
+        with open('class_names.json', 'r', encoding='utf-8') as f:
+            class_names = json.load(f)
+
+        with open('class_descriptions.json', 'r', encoding='utf-8') as f:
+            class_descriptions = json.load(f)
+
+        return class_names, class_descriptions
+    except FileNotFoundError:
+        st.error("Ошибка: файлы метаданных не найдены!")
+        st.stop()
 
 
-# Словарь с описаниями классов
-CLASS_DESCRIPTIONS = {
-    "alu_41": "Код переработки алюминия 41",
-    "c_ldpe_90": "Переработка LDPE (низкотемпературный полиэтилен) 90",
-    "c_pap_84": "Переработка бумаги 84",
-    "c_pet": "Переработка PET-пластика",
-    "c_pp_folg": "Переработка фольги из полипропилена (PP)",
-    "glass_dark": "Переработка тёмного стекла",
-    "glass_transparent": "Переработка прозрачного стекла",
-    "glass_green__pap_22": "Переработка зелёного стекла с бумагой 22",
-    "hdpe_2__pet_1": "Переработка HDPE и PET пластика",
-    "hdpe_2__pp_5soft__pet_1": "Переработка HDPE, мягкого PP и PET",
-    "hdpe_2_soft": "Переработка мягкого HDPE пластика",
-    "hdpe_2_solid": "Переработка твёрдого HDPE пластика",
-    "hdpe_2_solid__pap_20": "Переработка твёрдого HDPE с бумагой 20",
-    "jb_cover": "Переработка крышек JB",
-    "jb_cover__glass_dark": "Переработка крышек JB и тёмного стекла",
-    "ldpe_4_color": "Переработка цветного LDPE 4",
-    "not_defined": "Класс не определён",
-    "other_7": "Прочие материалы 7",
-    "pap_20": "Переработка бумаги 20",
-    "pap_21": "Переработка бумаги 21",
-    "pap_22": "Переработка бумаги 22",
-    "pet_1": "Переработка PET пластика 1",
-    "pet_1__pap_22": "Переработка PET с бумагой 22",
-    "pet_1__pap_22__hdpe_2_solid": "Переработка PET, бумаги 22 и твёрдого HDPE",
-    "pp_5_folg": "Переработка фольги из PP 5",
-    "pp_5_soft": "Переработка мягкого PP 5",
-    "pp_5_soft__pet_1": "Переработка мягкого PP 5 и PET",
-    "pp_5_solid": "Переработка твёрдого PP 5",
-    "pp_5_solid__c_ldpe_90": "Переработка твёрдого PP 5 и LDPE 90",
-    "ps_6_soft": "Переработка мягкого PS 6",
-    "ps_6_solid": "Переработка твёрдого PS 6",
-    "ps_6_solid__pap_22": "Переработка твёрдого PS 6 и бумаги 22",
-    "pvc_3": "Переработка PVC 3",
-    "pvc_3__ps_6": "Переработка PVC 3 и PS 6",
-}
+CLASS_NAMES, CLASS_DESCRIPTIONS = load_metadata()
 
 @st.cache_resource
 def load_model():
