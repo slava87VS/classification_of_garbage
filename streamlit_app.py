@@ -11,43 +11,18 @@ IMG_SIZE = (192, 256)
 # 1. Трансформации
 # === Функция предобработки изображения ===
 def resize_and_center(img, size):
-    """
-    Масштабирует изображение с сохранением пропорций и добавляет черные поля
-    для центрирования объекта
-    """
-    # Создаем копию, чтобы не изменять оригинал
-    img = img.copy()
-
-    # Определяем ориентацию (альбомная/портретная)
-    is_landscape = img.width > img.height
-
-    # Масштабируем по большей стороне
-    if is_landscape:
-        new_width = size[0]
-        new_height = int(size[0] * img.height / img.width)
-    else:
-        new_height = size[1]
-        new_width = int(size[1] * img.width / img.height)
-
-    # Ресайз с сохранением пропорций
-    img = img.resize((new_width, new_height), Image.BILINEAR)
-
-    # Создаем новый холст с черным фоном
-    new_img = Image.new("RGB", size, (0, 0, 0))
-
-    # Центрируем изображение
-    left = (size[0] - img.width) // 2
-    top = (size[1] - img.height) // 2
+    img.thumbnail((size[1], size[0]), Image.BILINEAR)  # (width, height)
+    new_img = Image.new("RGB", (size[1], size[0]), (0, 0, 0))
+    left = (size[1] - img.width) // 2
+    top = (size[0] - img.height) // 2
     new_img.paste(img, (left, top))
-
     return new_img
 
-
-# === Трансформации ===
+# === Преобразование изображения ===
 transform = transforms.Compose([
     transforms.Lambda(lambda img: resize_and_center(img, IMG_SIZE)),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5] * 3, std=[0.5] * 3)
+    transforms.Normalize([0.5]*3, [0.5]*3)
 ])
 
 
